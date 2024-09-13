@@ -1,5 +1,6 @@
-import { Component } from '@angular/core';
+import {Component, computed, effect, Signal, signal, WritableSignal} from '@angular/core';
 import { RouterOutlet } from '@angular/router';
+import {count} from "rxjs";
 
 @Component({
   selector: 'app-root',
@@ -9,5 +10,4 @@ import { RouterOutlet } from '@angular/router';
   styleUrl: './app.component.scss'
 })
 export class AppComponent {
-  title = 'demo';
 }
