@@ -1,10 +1,20 @@
-import {AfterViewInit, Component, ElementRef, HostListener, OnDestroy, OnInit, ViewChild} from '@angular/core';
+import {
+  AfterViewInit,
+  ChangeDetectorRef,
+  Component,
+  ElementRef,
+  HostListener,
+  OnDestroy,
+  OnInit,
+  ViewChild
+} from '@angular/core';
 import {WebrtcService} from "../../services/webrtc.service";
 import {CountryService} from "../../services/country.service";
 import {Country} from "../../interfaces/country";
 import {FormsModule} from "@angular/forms";
 import {CommonModule} from "@angular/common";
 import {WebsocketService} from "../../services/websocket.service";
+import {Message} from "../../interfaces/message";
 
 @Component({
   selector: 'app-video-call',
@@ -18,6 +28,7 @@ export class VideoCallComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('remoteVideo') remoteVideo?: ElementRef;
 
   private receiverId: string | null = null;
+  private currentDataChannel: RTCDataChannel | null = null;
   protected isStarted = false;
   protected isWaitingLocalVideo = true;
   protected isWaitingRemoteVideo = false;
@@ -26,11 +37,14 @@ export class VideoCallComponent implements OnInit, AfterViewInit, OnDestroy {
   protected countries: Country[] = [];
   protected filterCountries: Country[] = [];
   protected countUser: number = 0;
+  protected messages: Message[] =[];
+  protected messageInput: string = '';
 
   constructor(
     private webrtcService: WebrtcService,
     private countryService: CountryService,
     private websocketService: WebsocketService,
+    private cdr: ChangeDetectorRef
   ) {
   }
 
@@ -87,6 +101,7 @@ export class VideoCallComponent implements OnInit, AfterViewInit, OnDestroy {
   stopCall() {
     this.webrtcService.closePeerConnection();
     this.remoteVideo!.nativeElement.srcObject = null;
+    this.messages = [];
     this.websocketService.sendMessage({command: "stopCall", receiverId: this.receiverId});
     this.isStarted = false;
     this.isWaitingRemoteVideo = false;
@@ -118,25 +133,38 @@ export class VideoCallComponent implements OnInit, AfterViewInit, OnDestroy {
 
   handleMessage() {
     this.websocketService.getMessages()?.subscribe(msg => {
-      console.log(msg);
       switch (msg.command) {
         case 'createOffer':
           this.receiverId = msg.receiverId;
           this.webrtcService.createPeerConnection(this.remoteVideo!).then(peerConnection => {
+            this.currentDataChannel = peerConnection.createDataChannel('myDataChannel');
             peerConnection.onicecandidate = ({candidate}) => {
               if (candidate) {
                 this.websocketService.sendMessage({command: "candidate", receiverId: this.receiverId, data: candidate});
               }
-            }
+            };
             peerConnection.createOffer().then(async offer => {
               await peerConnection.setLocalDescription(offer);
               this.websocketService.sendMessage({command: 'offer', receiverId: this.receiverId, data: offer});
-            })
+            });
+            peerConnection.ondatachannel = (event) => {
+              const receiveChannel = event.channel;
+              receiveChannel.onmessage = (event) => {
+                const message: Message = {
+                  sender: 'client',
+                  message: event.data
+                }
+                this.messages.push(message);
+                this.cdr.detectChanges();
+              }
+            }
           });
           break;
 
         case 'offer':
           this.webrtcService.createPeerConnection(this.remoteVideo!).then(peerConnection => {
+            this.currentDataChannel = peerConnection.createDataChannel('myDataChannel');
+
             peerConnection.onicecandidate = ({candidate}) => {
               if (candidate) {
                 this.websocketService.sendMessage({command: "candidate", receiverId: this.receiverId, data: candidate});
@@ -147,6 +175,17 @@ export class VideoCallComponent implements OnInit, AfterViewInit, OnDestroy {
                 this.websocketService.sendMessage({command: "answer", receiverId: this.receiverId, data: answer});
               });
             });
+            peerConnection.ondatachannel = (event) => {
+              const receiveChannel = event.channel;
+              receiveChannel.onmessage = (event) => {
+                const message: Message = {
+                  sender: 'client',
+                  message: event.data
+                }
+                this.messages.push(message);
+                this.cdr.detectChanges();
+              }
+            }
           });
           this.isWaitingRemoteVideo = false;
           break;
@@ -184,8 +223,30 @@ export class VideoCallComponent implements OnInit, AfterViewInit, OnDestroy {
   nextHandle() {
     this.webrtcService.closePeerConnection();
     this.remoteVideo!.nativeElement.srcObject = null;
+    this.messages = [];
     this.websocketService.sendMessage({command: "match", data: {}});
     this.isWaitingRemoteVideo = true;
+  }
+
+  sendMessage() {
+    if (this.currentDataChannel) {
+      if (this.currentDataChannel.readyState === 'open') {
+        const messageText = this.messageInput.trim();
+        if (messageText) {
+          const message: Message = {
+            sender: 'me',
+            message: messageText
+          };
+          this.messages.push(message);
+          this.currentDataChannel.send(messageText);
+          this.messageInput = '';
+        }
+      } else {
+        console.warn('DataChannel is not open');
+      }
+    } else {
+      console.warn('DataChannel is not established');
+    }
   }
 
 }

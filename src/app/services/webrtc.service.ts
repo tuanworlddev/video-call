@@ -11,10 +11,24 @@ export class WebrtcService {
     iceServers: [{ urls: 'stun:stun.l.google.com:19302' }]
   }
 
+  private constraints = {
+    audio: {
+      echoCancellation: {exact: true}, // Bật hủy tiếng vọng
+      noiseSuppression: true,         // Bật giảm tiếng ồn
+      autoGainControl: true,          // Bật điều chỉnh tự động âm lượng
+      googEchoCancellation: true,    // Cấu hình hủy tiếng vọng nâng cao của Google
+      googNoiseSuppression: true,    // Cấu hình giảm tiếng ồn nâng cao của Google
+      googAutoGainControl: true      // Cấu hình điều chỉnh âm lượng tự động nâng cao của Google
+    },
+    video: {
+      width: 1280, height: 720
+    }
+  }
+
   constructor() { }
 
   async initializeLocalVideo(): Promise<MediaStream> {
-    this.localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+    this.localStream = await navigator.mediaDevices.getUserMedia(this.constraints);
     return this.localStream;
   }
 
@@ -37,18 +51,10 @@ export class WebrtcService {
     }
   }
 
-  onIcecandidate() {
-    return this.peerConnection!.onicecandidate;
-  }
-
   async createOffer() {
     const offer = await this.peerConnection!.createOffer();
     await this.peerConnection!.setLocalDescription(offer);
     return offer;
-  }
-
-  async setLocalDescription(offer: any) {
-    await this.peerConnection!.setRemoteDescription(new RTCSessionDescription(offer));
   }
 
   async setRemoteDescription(answer: any) {

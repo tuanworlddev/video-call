@@ -13,7 +13,7 @@ export class WebsocketService {
   }
 
   connect() {
-    this.socket = webSocket("wss://65c3-2405-4802-605a-1510-545f-727f-1acc-cae1.ngrok-free.app/ws");
+    this.socket = webSocket("wss://1862-2402-800-629c-f724-f4c9-97ab-6195-4daf.ngrok-free.app/ws");
   }
 
   sendMessage(message: any) {
