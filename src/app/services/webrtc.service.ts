@@ -11,15 +11,16 @@ export class WebrtcService {
     iceServers: [{ urls: 'stun:stun.l.google.com:19302' }]
   }
 
+// {
+//   echoCancellation: {exact: true}, // Bật hủy tiếng vọng
+//   noiseSuppression: true,         // Bật giảm tiếng ồn
+//   autoGainControl: true,          // Bật điều chỉnh tự động âm lượng
+//   googEchoCancellation: true,    // Cấu hình hủy tiếng vọng nâng cao của Google
+//   googNoiseSuppression: true,    // Cấu hình giảm tiếng ồn nâng cao của Google
+//   googAutoGainControl: true      // Cấu hình điều chỉnh âm lượng tự động nâng cao của Google
+// }
   private constraints = {
-    audio: {
-      echoCancellation: {exact: true}, // Bật hủy tiếng vọng
-      noiseSuppression: true,         // Bật giảm tiếng ồn
-      autoGainControl: true,          // Bật điều chỉnh tự động âm lượng
-      googEchoCancellation: true,    // Cấu hình hủy tiếng vọng nâng cao của Google
-      googNoiseSuppression: true,    // Cấu hình giảm tiếng ồn nâng cao của Google
-      googAutoGainControl: true      // Cấu hình điều chỉnh âm lượng tự động nâng cao của Google
-    },
+    audio: false,
     video: {
       width: 1280, height: 720
     }

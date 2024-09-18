@@ -15,6 +15,8 @@ import {FormsModule} from "@angular/forms";
 import {CommonModule} from "@angular/common";
 import {WebsocketService} from "../../services/websocket.service";
 import {Message} from "../../interfaces/message";
+import {Filter} from "../../interfaces/filter";
+import {FilterService} from "../../services/filter.service";
 
 @Component({
   selector: 'app-video-call',
@@ -39,11 +41,15 @@ export class VideoCallComponent implements OnInit, AfterViewInit, OnDestroy {
   protected countUser: number = 0;
   protected messages: Message[] =[];
   protected messageInput: string = '';
+  protected filters: Filter[] = [];
+  protected currentFilter?: Filter;
+  protected receiverFilter?: Filter;
 
   constructor(
     private webrtcService: WebrtcService,
     private countryService: CountryService,
     private websocketService: WebsocketService,
+    private filterService: FilterService,
     private cdr: ChangeDetectorRef
   ) {
   }
@@ -70,6 +76,11 @@ export class VideoCallComponent implements OnInit, AfterViewInit, OnDestroy {
         this.currenCountry = countries.find(country => country.code === location.country);
       })
     });
+    this.filterService.getAllFilters().subscribe(filters => {
+      this.filters = filters;
+      this.currentFilter = filters[0];
+      this.receiverFilter = filters[0];
+    })
   }
 
   ngAfterViewInit(): void {
@@ -131,6 +142,17 @@ export class VideoCallComponent implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
+  onChangeFilter(filterId: number) {
+    this.currentFilter = this.filters.find(filter => filter.filterId === filterId);
+    if (this.receiverId && !this.isWaitingRemoteVideo) {
+      this.websocketService.sendMessage({command: "filter", receiverId: this.receiverId, data: { filterId: this.currentFilter?.filterId} })
+    }
+  }
+
+  onChangeReceiverFilter(filterId: number) {
+    this.receiverFilter = this.filters.find(filter => filter.filterId === filterId);
+  }
+
   handleMessage() {
     this.websocketService.getMessages()?.subscribe(msg => {
       switch (msg.command) {
@@ -173,6 +195,7 @@ export class VideoCallComponent implements OnInit, AfterViewInit, OnDestroy {
             peerConnection.setRemoteDescription(new RTCSessionDescription(msg.data)).then(() => {
               this.webrtcService.createAnswer().then(answer => {
                 this.websocketService.sendMessage({command: "answer", receiverId: this.receiverId, data: answer});
+                this.websocketService.sendMessage({command: "filter", receiverId: this.receiverId, data: { filterId: this.currentFilter?.filterId} })
               });
             });
             peerConnection.ondatachannel = (event) => {
@@ -192,6 +215,7 @@ export class VideoCallComponent implements OnInit, AfterViewInit, OnDestroy {
 
         case 'answer':
           this.webrtcService.setRemoteDescription(msg.data).catch(err => console.error(err));
+          this.websocketService.sendMessage({command: "filter", receiverId: this.receiverId, data: { filterId: this.currentFilter?.filterId} })
           this.isWaitingRemoteVideo = false;
           break;
 
@@ -213,6 +237,9 @@ export class VideoCallComponent implements OnInit, AfterViewInit, OnDestroy {
 
         case 'next':
           this.nextHandle();
+          break;
+        case 'filter':
+          this.onChangeReceiverFilter(msg.data.filterId);
           break;
         default:
           console.warn('Unknown command:', msg.command);

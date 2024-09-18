@@ -8,7 +8,7 @@ import {Location} from "../interfaces/location";
   providedIn: 'root'
 })
 export class CountryService {
-  private apiUrl = 'https://1862-2402-800-629c-f724-f4c9-97ab-6195-4daf.ngrok-free.app/api/countries';
+  private apiUrl = 'http://localhost:8080/api/countries';
 
   constructor(private httpClient: HttpClient) { }
 

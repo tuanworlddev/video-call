@@ -2,7 +2,15 @@
   <div class="w-full p-3 flex items-center justify-between flex-col md:flex-row gap-2 mb-1">
     <div
       class="relative w-full h-full aspect-[4/3] flex items-center justify-center bg-black border-2 border-gray-900 rounded shadow-xl">
-      <video #remoteVideo class="w-full h-full rounded -scale-x-100" autoplay playsinline></video>
+      <video #remoteVideo
+             class="w-full h-full rounded -scale-x-100"
+             autoplay playsinline
+             [style.filter]="
+              'saturate(' + receiverFilter?.saturate + ')' +
+              'contrast(' + receiverFilter?.contrast + ')' +
+              'brightness(' + receiverFilter?.brightness + ')' +
+              'grayscale(' + receiverFilter?.grayscale + ')'"
+      ></video>
       @if (isStarted && isWaitingRemoteVideo) {
         <img src="spinner.svg" alt="loading" class="absolute" width="128px" height="128px">
       }
@@ -13,8 +21,36 @@
       }
     </div>
     <div
-      class="relative w-full h-full aspect-[4/3] flex items-center justify-center bg-black border-2 border-gray-900 rounded shadow-xl">
-      <video #localVideo class="w-full rounded -scale-x-100" autoplay playsinline></video>
+      class="relative w-full h-full group aspect-[4/3] flex items-center justify-center bg-black border-2 border-gray-900 rounded shadow-xl">
+      <video #localVideo
+             class="w-full rounded -scale-x-100 relative"
+             [style.filter]="
+              'saturate(' + currentFilter?.saturate + ')' +
+              'contrast(' + currentFilter?.contrast + ')' +
+              'brightness(' + currentFilter?.brightness + ')' +
+              'grayscale(' + currentFilter?.grayscale + ')'"
+             autoplay playsinline>
+
+      </video>
+      <div class="flex justify-start items-center bottom-0.5 gap-2 absolute overflow-auto scrollbar-hidden opacity-0 transition-opacity duration-300 group-hover:opacity-100">
+        @for (filter of filters; track $index) {
+          <button class="flex flex-col items-center justify-center gap-1" (click)="onChangeFilter(filter.filterId)">
+            <img
+              src="avatar.jpg"
+              alt="img"
+              class="rounded border hover:border-amber-400"
+              [ngClass]="filter.filterId === currentFilter?.filterId ? 'border-amber-600' : 'border-gray-300'"
+              width="48px"
+              [style.filter]="
+              'saturate(' + filter.saturate + ')' +
+              'contrast(' + filter.contrast + ')' +
+              'brightness(' + filter.brightness + ')' +
+              'grayscale(' + filter.grayscale + ')'"
+            >
+            <span class="text-xs text-gray-300 opacity-50">{{ filter.name }}</span>
+          </button>
+        }
+      </div>
       @if (isWaitingLocalVideo) {
         <img src="spinner.svg" alt="loading" class="absolute" width="128px" height="128px">
       }

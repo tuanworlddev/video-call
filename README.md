@@ -25,3 +25,16 @@ Run `ng e2e` to execute the end-to-end tests via a platform of your choice. To u
 ## Further help
 
 To get more help on the Angular CLI use `ng help` or go check out the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+
+## Filter
+
+* brightness(): 0 (tối hoàn toàn) đến không giới hạn.
+* contrast(): 0 (không tương phản) đến không giới hạn.
+* saturate(): 0 (không bão hòa) đến không giới hạn.
+* hue-rotate(): 0deg đến không giới hạn (độ xoay tông màu).
+* blur(): 0px đến không giới hạn (độ mờ).
+* grayscale(): 0 (bình thường) đến 1 (thang độ xám).
+* sepia(): 0 (bình thường) đến 1 (hiệu ứng sepia).
+* invert(): 0 (bình thường) đến 1 (đảo ngược màu).
+* opacity(): 0 (trong suốt hoàn toàn) đến 1 (không trong suốt).
+* drop-shadow(): Cấu hình theo độ dịch chuyển, bán kính mờ, và màu sắc.
