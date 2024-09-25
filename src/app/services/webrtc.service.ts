@@ -1,46 +1,56 @@
-import {ElementRef, Injectable} from '@angular/core';
+import { ElementRef, Injectable } from '@angular/core';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class WebrtcService {
   private localStream?: MediaStream;
   private peerConnection?: RTCPeerConnection;
 
   private rtcConfiguration = {
-    iceServers: [{ urls: 'stun:stun.l.google.com:19302' }]
-  }
+    iceServers: [
+      {
+        urls: 'turn:relay1.expressturn.com:3478',
+        username: 'ef129RG76QDPBG8J4M',
+        credential: 'BvL1gudsosFV60CK',
+      },
+    ],
+  };
 
-// {
-//   echoCancellation: {exact: true}, // Bật hủy tiếng vọng
-//   noiseSuppression: true,         // Bật giảm tiếng ồn
-//   autoGainControl: true,          // Bật điều chỉnh tự động âm lượng
-//   googEchoCancellation: true,    // Cấu hình hủy tiếng vọng nâng cao của Google
-//   googNoiseSuppression: true,    // Cấu hình giảm tiếng ồn nâng cao của Google
-//   googAutoGainControl: true      // Cấu hình điều chỉnh âm lượng tự động nâng cao của Google
-// }
+  // {
+  //   echoCancellation: {exact: true}, // Bật hủy tiếng vọng
+  //   noiseSuppression: true,         // Bật giảm tiếng ồn
+  //   autoGainControl: true,          // Bật điều chỉnh tự động âm lượng
+  //   googEchoCancellation: true,    // Cấu hình hủy tiếng vọng nâng cao của Google
+  //   googNoiseSuppression: true,    // Cấu hình giảm tiếng ồn nâng cao của Google
+  //   googAutoGainControl: true      // Cấu hình điều chỉnh âm lượng tự động nâng cao của Google
+  // }
   private constraints = {
     audio: false,
-    video: {
-      width: 1280, height: 720
-    }
-  }
+    video: true,
+  };
 
-  constructor() { }
+  constructor() {}
 
   async initializeLocalVideo(): Promise<MediaStream> {
-    this.localStream = await navigator.mediaDevices.getUserMedia(this.constraints);
+    this.localStream = await navigator.mediaDevices.getUserMedia(
+      this.constraints
+    );
     return this.localStream;
   }
 
   async createPeerConnection(remoteVideoRef: ElementRef) {
     this.peerConnection = new RTCPeerConnection(this.rtcConfiguration);
 
-    this.localStream?.getTracks().forEach(track => this.peerConnection?.addTrack(track, this.localStream!));
+    this.localStream
+      ?.getTracks()
+      .forEach((track) =>
+        this.peerConnection?.addTrack(track, this.localStream!)
+      );
 
     this.peerConnection.ontrack = (event) => {
       remoteVideoRef!.nativeElement.srcObject = event.streams[0];
-    }
+    };
 
     return this.peerConnection;
   }
@@ -59,7 +69,9 @@ export class WebrtcService {
   }
 
   async setRemoteDescription(answer: any) {
-    await this.peerConnection!.setRemoteDescription(new RTCSessionDescription(answer));
+    await this.peerConnection!.setRemoteDescription(
+      new RTCSessionDescription(answer)
+    );
   }
 
   async createAnswer() {
@@ -71,5 +83,4 @@ export class WebrtcService {
   async setIceCandidate(candidate: any) {
     await this.peerConnection?.addIceCandidate(new RTCIceCandidate(candidate));
   }
-
 }

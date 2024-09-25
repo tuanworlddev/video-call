@@ -119,6 +119,7 @@ export class VideoCallComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   openModal() {
+    this.filterCountries = this.countries;
     this.isModalOpen = true;
   }
 
@@ -160,6 +161,13 @@ export class VideoCallComponent implements OnInit, AfterViewInit, OnDestroy {
           this.receiverId = msg.receiverId;
           this.webrtcService.createPeerConnection(this.remoteVideo!).then(peerConnection => {
             this.currentDataChannel = peerConnection.createDataChannel('myDataChannel');
+            this.currentDataChannel.onopen = () => {
+            };
+            this.currentDataChannel.onclose = () => {
+            };
+            this.currentDataChannel.onerror = (error) => {
+              console.log(error)
+            }
             peerConnection.onicecandidate = ({candidate}) => {
               if (candidate) {
                 this.websocketService.sendMessage({command: "candidate", receiverId: this.receiverId, data: candidate});
@@ -186,7 +194,12 @@ export class VideoCallComponent implements OnInit, AfterViewInit, OnDestroy {
         case 'offer':
           this.webrtcService.createPeerConnection(this.remoteVideo!).then(peerConnection => {
             this.currentDataChannel = peerConnection.createDataChannel('myDataChannel');
-
+            this.currentDataChannel.onopen = () => {
+              console.log('DataChannel is open');
+            };
+            this.currentDataChannel.onclose = () => {
+              console.log('DataChannel is closed');
+            };
             peerConnection.onicecandidate = ({candidate}) => {
               if (candidate) {
                 this.websocketService.sendMessage({command: "candidate", receiverId: this.receiverId, data: candidate});
@@ -209,6 +222,12 @@ export class VideoCallComponent implements OnInit, AfterViewInit, OnDestroy {
                 this.cdr.detectChanges();
               }
             }
+            peerConnection.oniceconnectionstatechange = () => {
+              console.log("ICE Connection State:", peerConnection.iceConnectionState);
+              if (peerConnection.iceConnectionState === 'failed') {
+                console.error('ICE Connection Failed');
+              }
+            };
           });
           this.isWaitingRemoteVideo = false;
           break;

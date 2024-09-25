@@ -1,0 +1,33 @@
+<header>
+  <nav class="bg-white dark:bg-gray-800 py-2.5">
+    <div class="flex flex-wrap justify-between items-center px-4 lg:px-6 mx-auto">
+      <div class="flex">
+        <a routerLink="/" class="flex items-center">
+          <img src="favicon.ico" class="mr-3 h-6 sm:h-9" alt="TuanDev" />
+          <span class="self-center text-xl font-semibold whitespace-nowrap dark:text-white">
+          TuanDev
+        </span>
+        </a>
+        <ul class="hidden md:flex items-center gap-3 ml-6">
+          <li>
+            <a routerLink="/" class="px-2 hover:text-gray-200 dark:text-gray-400" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">Home</a>
+          </li>
+          <li>
+            <a routerLink="/about" class="px-2 hover:text-gray-200 dark:text-gray-400" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">About</a>
+          </li>
+          <li>
+            <a routerLink="/contact" class="px-2 hover:text-gray-200 dark:text-gray-400" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">Contact</a>
+          </li>
+          <li>
+            <button class="px-2 hover:text-gray-200 dark:text-gray-400">Feedback</button>
+          </li>
+        </ul>
+      </div>
+      <div class="flex">
+        <button class="mr-3 px-2 dark:text-white">Login</button>
+        <a routerLink="/register" class="border rounded dark:text-white px-2.5 py-1">Register</a>
+      </div>
+    </div>
+  </nav>
+</header>
+

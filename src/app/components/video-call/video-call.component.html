@@ -1,15 +1,22 @@
-<div>
+<div class="bg-gray-50">
   <div class="w-full p-3 flex items-center justify-between flex-col md:flex-row gap-2 mb-1">
     <div
       class="relative w-full h-full aspect-[4/3] flex items-center justify-center bg-black border-2 border-gray-900 rounded shadow-xl">
       <video #remoteVideo
-             class="w-full h-full rounded -scale-x-100"
-             autoplay playsinline
+             class="w-full aspect-[4/3] rounded -scale-x-100"
              [style.filter]="
-              'saturate(' + receiverFilter?.saturate + ')' +
-              'contrast(' + receiverFilter?.contrast + ')' +
-              'brightness(' + receiverFilter?.brightness + ')' +
-              'grayscale(' + receiverFilter?.grayscale + ')'"
+              'blur(' + receiverFilter?.blur + 'px) ' +
+                'invert(' + receiverFilter?.invert + ') ' +
+                'opacity(' + receiverFilter?.opacity + ') ' +
+                'sepia(' + receiverFilter?.sepia + ') ' +
+                'saturate(' + receiverFilter?.saturate + ') ' +
+                'contrast(' + receiverFilter?.contrast + ') ' +
+                'brightness(' + receiverFilter?.brightness + ') ' +
+                'grayscale(' + receiverFilter?.grayscale + ')' +
+                'hue-rotate(' + receiverFilter?.hueRotate + 'deg)'
+              "
+             autoplay
+             playsinline
       ></video>
       @if (isStarted && isWaitingRemoteVideo) {
         <img src="spinner.svg" alt="loading" class="absolute" width="128px" height="128px">
@@ -23,16 +30,22 @@
     <div
       class="relative w-full h-full group aspect-[4/3] flex items-center justify-center bg-black border-2 border-gray-900 rounded shadow-xl">
       <video #localVideo
-             class="w-full rounded -scale-x-100 relative"
+             class="w-full aspect-[4/3] rounded -scale-x-100 relative"
              [style.filter]="
-              'saturate(' + currentFilter?.saturate + ')' +
-              'contrast(' + currentFilter?.contrast + ')' +
-              'brightness(' + currentFilter?.brightness + ')' +
-              'grayscale(' + currentFilter?.grayscale + ')'"
-             autoplay playsinline>
-
+                'blur(' + currentFilter?.blur + 'px) ' +
+                'invert(' + currentFilter?.invert + ') ' +
+                'opacity(' + currentFilter?.opacity + ') ' +
+                'sepia(' + currentFilter?.sepia + ') ' +
+                'saturate(' + currentFilter?.saturate + ') ' +
+                'contrast(' + currentFilter?.contrast + ') ' +
+                'brightness(' + currentFilter?.brightness + ') ' +
+                'grayscale(' + currentFilter?.grayscale + ')' +
+                'hue-rotate(' + currentFilter?.hueRotate + 'deg)'
+             "
+             autoplay
+             playsinline>
       </video>
-      <div class="flex justify-start items-center bottom-0.5 gap-2 absolute overflow-auto scrollbar-hidden opacity-0 transition-opacity duration-300 group-hover:opacity-100">
+      <div class="flex justify-center items-center bottom-0.5 gap-2 px-2 absolute overflow-x-auto scrollbar-hidden opacity-0 transition-opacity duration-300 group-hover:opacity-100 w-full">
         @for (filter of filters; track $index) {
           <button class="flex flex-col items-center justify-center gap-1" (click)="onChangeFilter(filter.filterId)">
             <img
@@ -41,11 +54,18 @@
               class="rounded border hover:border-amber-400"
               [ngClass]="filter.filterId === currentFilter?.filterId ? 'border-amber-600' : 'border-gray-300'"
               width="48px"
+              height="48px"
               [style.filter]="
-              'saturate(' + filter.saturate + ')' +
-              'contrast(' + filter.contrast + ')' +
-              'brightness(' + filter.brightness + ')' +
-              'grayscale(' + filter.grayscale + ')'"
+                'blur(' + filter.blur + 'px) ' +
+                'invert(' + filter.invert + ') ' +
+                'opacity(' + filter.opacity + ') ' +
+                'sepia(' + filter.sepia + ') ' +
+                'saturate(' + filter.saturate + ') ' +
+                'contrast(' + filter.contrast + ') ' +
+                'brightness(' + filter.brightness + ') ' +
+                'grayscale(' + filter.grayscale + ')' +
+                'hue-rotate(' + filter.hueRotate + 'deg)'
+              "
             >
             <span class="text-xs text-gray-300 opacity-50">{{ filter.name }}</span>
           </button>
@@ -56,27 +76,27 @@
       }
     </div>
   </div>
-  <div class="w-full px-3 flex items-center justify-between gap-3">
+  <div class="w-full px-3 flex flex-col md:flex-row items-center justify-between gap-3">
     <div class="w-full flex items-center justify-between">
       <div class="flex items-center justify-between gap-3">
         @if (!isStarted) {
           <button (click)="startCall()"
-                  class="bg-green-500 hover:bg-green-600 disabled:bg-green-200 text-white font-bold p-8 border-b-8 border-green-800 disabled:border-green-300 rounded">
+                  class="bg-green-500 hover:bg-green-600 disabled:bg-green-200 text-white font-bold p-3 md:p-8 border-b-2 md:border-b-8 border-green-800 disabled:border-green-300 rounded">
             Start
           </button>
         } @else {
           <button (click)="nextCall()"
-                  class="bg-green-500 hover:bg-green-600 disabled:bg-green-200 text-white font-bold p-8 border-b-8 border-green-800 disabled:border-green-300 rounded"
+                  class="bg-green-500 hover:bg-green-600 disabled:bg-green-200 text-white font-bold p-3 md:p-8 border-b-2 md:border-b-8 border-green-800 disabled:border-green-300 rounded"
                   [disabled]="isWaitingRemoteVideo">Next
           </button>
         }
         <button (click)="stopCall()"
-                class="bg-red-500 hover:bg-red-600 disabled:bg-red-200 text-white font-bold p-8 border-b-8 border-red-800 disabled:border-red-300 rounded"
+                class="bg-red-500 hover:bg-red-600 disabled:bg-red-200 text-white font-bold p-3 md:p-8 border-b-2 md:border-b-8 border-red-800 disabled:border-red-300 rounded"
                 [disabled]="!isStarted">Stop
         </button>
       </div>
       <div class="flex items-center justify-between gap-3">
-        <button class="bg-white hover:bg-gray-100 border-2 rounded p-4 flex flex-col items-center justify-center"
+        <button class="bg-white hover:bg-gray-100 border-2 rounded p-1 md:p-4 flex flex-col items-center justify-center"
                 (click)="openModal()">
           @if (!currenCountry) {
             Choose country
@@ -87,7 +107,7 @@
         </button>
       </div>
     </div>
-    <div class="w-full border p-2 rounded">
+    <div class="w-full bg-white border p-2 rounded mb-3 shadow-xl">
       <h3>Messages</h3>
       <hr class="mb-1">
       <div class="flex flex-col scrollbar-hidden overflow-auto" style="height: 100px">
@@ -115,7 +135,7 @@
 
 @if (isModalOpen) {
   <div class="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center">
-    <div class="bg-white rounded-lg p-3 w-2/3">
+    <div class="bg-white rounded-lg p-3 w-3/4 md:w-2/3">
       <div class="flex items-center justify-between mb-3">
         <h2 class="text-xl font-bold">Choose Country</h2>
         <div class="flex items-center">
@@ -145,11 +165,11 @@
         </div>
       </div>
       <div
-        class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-2 max-h-[75vh] overflow-auto scrollbar-hidden">
+        class="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-2 h-[75vh] overflow-auto scrollbar-hidden justify-start items-start">
         @for (country of filterCountries; track country.country_id) {
-          <button class="flex justify-start items-center bg-white hover:bg-gray-100 p-1 rounded"
+          <button class="flex justify-start items-center bg-white hover:bg-blue-500 transition-colors duration-100 p-1 rounded"
                   (click)="selectCountry(country.code)">
-            <img src="{{ country.flag }}" width="32" height="32">
+            <img src="{{ country.flag }}" width="22" height="22" class="border rounded" style="border-radius: 50%">
             <span class="truncate ml-0.5">{{ country.name }}</span>
           </button>
         } @empty {
